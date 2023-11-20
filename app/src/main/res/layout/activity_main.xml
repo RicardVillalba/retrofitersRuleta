@@ -12,8 +12,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_weight="1.0"
-        tools:layout_editor_absoluteX="0dp"
-        tools:layout_editor_absoluteY="-82dp">
+        app:layout_constraintBottom_toBottomOf="parent"
+        tools:layout_editor_absoluteX="16dp">
 
         <ImageView
             android:id="@+id/panoruleta"
@@ -32,9 +32,41 @@
             android:layout_centerHorizontal="true"
             android:layout_marginBottom="46dp"
             android:background="@drawable/replay"
-            android:onClick="onClickButtonRotation"
-            android:contentDescription="Mucha suerte"
-            />
+            android:onClick="onClickButtonRotation" />
+
+        <TextView
+            android:id="@+id/monederoLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            android:layout_marginTop="653dp"
+            android:layout_marginRight="261dp"
+            android:text="Monedero: 100"
+            android:textColor="@android:color/holo_green_dark"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/turnosLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/monederoLabel"
+            android:layout_alignParentRight="true"
+            android:layout_marginTop="29dp"
+            android:layout_marginRight="306dp"
+            android:text="Turnos: 0"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/numeroGanadorTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/monederoLabel"
+            android:layout_alignParentRight="true"
+            android:layout_marginTop="-24dp"
+            android:layout_marginRight="47dp"
+            android:text="Número: 0"
+            android:textSize="18sp" />
 
         <ImageView
             android:id="@+id/redtriangle"
@@ -43,9 +75,80 @@
             android:layout_above="@+id/panoruleta"
             android:layout_centerHorizontal="true"
             android:layout_marginBottom="-70dp"
-            android:src="@drawable/redtriangle"
-            />
+            android:src="@drawable/redtriangle" />
 
+        <EditText
+            android:id="@+id/editTextBetAmount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            android:layout_marginTop="105dp"
+            android:layout_marginRight="103dp"
+            android:hint="Ingrese la cantidad a apostar"
+            android:inputType="numberDecimal" />
+
+        <LinearLayout
+            android:id="@+id/colorButtonsLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnRojo"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Rojo"
+                android:layout_weight="1"
+                android:layout_marginRight="5dp"/>
+
+            <Button
+                android:id="@+id/btnNegro"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Negro"
+                android:layout_weight="1"
+                android:layout_marginLeft="5dp"/>
+
+        </LinearLayout>
+
+        <!-- Segunda línea con botones de números: 0-11, 12-24, 25-36 -->
+        <LinearLayout
+            android:id="@+id/numberButtonsLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/colorButtonsLayout"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btn0_11"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="0-11"
+                android:layout_weight="1"
+                android:layout_marginRight="5dp"/>
+
+            <Button
+                android:id="@+id/btn12_24"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="12-24"
+                android:layout_weight="1"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"/>
+
+            <Button
+                android:id="@+id/btn25_36"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="25-36"
+                android:layout_weight="1"
+                android:layout_marginLeft="5dp"/>
+
+
+
+        </LinearLayout>
 
 
 
