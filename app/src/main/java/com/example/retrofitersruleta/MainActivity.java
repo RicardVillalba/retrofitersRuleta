@@ -23,7 +23,7 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
     private Button buttonStart;
     private float lngDegrees = 0;
 
-    private ImageView redTriangle, panoRuleta;
+    private ImageView panoRuleta;
     private EditText editTextBetAmount;
     private boolean panoRuletaRotation = true;
 
@@ -44,7 +44,6 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
         // Inicializar las vistas
         buttonStart = findViewById(R.id.buttonstart);
         panoRuleta = findViewById(R.id.panoruleta);
-        redTriangle = findViewById(R.id.redtriangle);
         editTextBetAmount = findViewById(R.id.editTextBetAmount);
         monederoLabel = findViewById(R.id.monederoLabel);
         turnosLabel = findViewById(R.id.turnosLabel);
@@ -111,6 +110,11 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
                 // Si es una apuesta a un rango de números
                 checkNumberRangeBetResult();
             }
+            // Incrementar el contador de turnos después de cada rotación exitosa
+            turnos++;
+
+            // Actualizar la interfaz de usuario
+            updateUI();
         }
     }
 
@@ -200,7 +204,15 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
         // Restablece el estado de los botones después de 3 turnos
         if (turnos % 3 == 0) {
             resetButtons();
+
+        // Verificar si el monedero es menor que 0
+        if (monedero <= 0) {
+            // Mostrar mensaje y cerrar la aplicación
+            Toast.makeText(this, "No tienes saldo, fin del juego", Toast.LENGTH_SHORT).show();
+            finish(); // Cierra la actividad actual (la aplicación en este caso)
         }
+    }
+
     }
     private void resetButtons() {
         // Lógica para restablecer el estado de los botones
@@ -211,7 +223,7 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
     private int calculateColorBetWinnings(boolean isWinningColorBet, int betAmount) {
         // Lógica para calcular las ganancias en función de la apuesta de color y la cantidad apostada
         // Duplica la cantidad apostada si la apuesta es ganadora, de lo contrario, la pierde.
-        return isWinningColorBet ? (betAmount * 2) : 0;
+        return isWinningColorBet ? (betAmount) : 0;
     }
 
 

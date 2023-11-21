@@ -68,14 +68,7 @@
             android:text="Número: 0"
             android:textSize="18sp" />
 
-        <ImageView
-            android:id="@+id/redtriangle"
-            android:layout_width="100dp"
-            android:layout_height="120dp"
-            android:layout_above="@+id/panoruleta"
-            android:layout_centerHorizontal="true"
-            android:layout_marginBottom="-70dp"
-            android:src="@drawable/redtriangle" />
+
 
         <EditText
             android:id="@+id/editTextBetAmount"
