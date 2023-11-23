@@ -1,6 +1,8 @@
 package com.example.retrofitersruleta;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
@@ -18,8 +20,16 @@ import java.util.Random;
 
 public class MainActivity extends AppCompatActivity implements Animation.AnimationListener {
 
+
+
+
+    private int id;
+    private String nombre;
     private int monedero = 100;
     private int turnos = 0;
+    private int winningNumber = 0;
+    private int winnings = 0;
+
     private Button buttonStart;
     private float lngDegrees = 0;
 
@@ -29,17 +39,32 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
 
     private boolean isRojoSelected = false;
     private boolean isNegroSelected = false;
+    private boolean is1stRangeSelected = false;
+
+    private boolean is2ndRangeSelected = false;
+    private boolean is3rdRangeSelected = false;
+
 
     private TextView monederoLabel;
     private TextView turnosLabel;
 
     private TextView numeroGanadorTextView;
-    private Random random = new Random();
+
+    private WalletDatabase walletDatabase;
+
+
+    private final Random random = new Random();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Initialize the WalletDatabase
+        walletDatabase = new WalletDatabase(this);
+
+        WalletDbHelper dbHelper = new WalletDbHelper(this); // "this" es un contexto válido
+        dbHelper.copyDatabaseFromAssets();
 
         // Inicializar las vistas
         buttonStart = findViewById(R.id.buttonstart);
@@ -51,20 +76,13 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
 
 
         // Configurar el botón de inicio
-        buttonStart.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onClickButtonRotation(v);
-            }
-        });
+        buttonStart.setOnClickListener(v -> onClickButtonRotation(v));
 
         // Configurar los botones de apuesta
         configureBetButtons();
-
-        // Otras configuraciones que puedas necesitar...
     }
 
-    private void configureBetButtons() {
+       private void configureBetButtons() {
         // Configurar los botones de apuesta
         configureBetButton(R.id.btnRojo);
         configureBetButton(R.id.btnNegro);
@@ -84,25 +102,22 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
     }
 
     private void handleBetButtonClick(Button betButton) {
-        // Lógica para manejar el clic en un botón de apuesta
-        // Eliminar el código que cambia el estado de los botones al ser pulsados
-        // ...
-
         if (betButton.getId() == R.id.btnRojo) {
             isRojoSelected = !isRojoSelected;
         } else if (betButton.getId() == R.id.btnNegro) {
             isNegroSelected = !isNegroSelected;
+        } else if (betButton.getId() == R.id.btn0_11) {
+            is1stRangeSelected = !is1stRangeSelected;
+        } else if (betButton.getId() == R.id.btn12_24) {
+            is2ndRangeSelected = !is2ndRangeSelected;
+        } else if (betButton.getId() == R.id.btn25_36) {
+            is3rdRangeSelected = !is3rdRangeSelected;
         }
-        // Puedes agregar lógica adicional para otros botones si es necesario
-        // No necesitas cambiar el estado visual de los botones de rango 0-11, 12-24, 25-36
     }
 
     public void onClickButtonRotation(View v) {
         if (panoRuletaRotation) {
-            // Resto del código de animación...
-
             // Lógica de apuesta
-            int betAmount = getBetAmount();
             if (isRojoSelected || isNegroSelected) {
                 // Si es una apuesta de color
                 checkColorBetResult();
@@ -113,69 +128,8 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
             // Incrementar el contador de turnos después de cada rotación exitosa
             turnos++;
 
-            // Actualizar la interfaz de usuario
-            updateUI();
+            // Insertar datos en la base de datos
         }
-    }
-
-
-    private void checkColorBetResult() {
-
-        int ran = new Random().nextInt(360) + 3600;
-        RotateAnimation rotateAnimation = new RotateAnimation((float) lngDegrees, (float)
-                (lngDegrees + ran), 1, 0.5f, 1, 0.5f);
-
-        lngDegrees = (lngDegrees + ran) % 360;
-        rotateAnimation.setDuration((long) ran);
-        rotateAnimation.setFillAfter(true);
-        rotateAnimation.setInterpolator(new DecelerateInterpolator());
-        rotateAnimation.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {
-                panoRuletaRotation = false;
-            }
-
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                panoRuletaRotation = true;
-                // Obtener el resultado después del giro
-                int winningNumber = calculateWinningNumber();
-                updateNumeroGanadorTextView(winningNumber);
-
-                // Verificar el resultado de la apuesta de color
-                boolean isWinningColorBet = isWinningColorBet(winningNumber);
-
-                // Calcular las ganancias y actualizar el monedero
-                int betAmount = getBetAmount();
-                int winnings = calculateColorBetWinnings(isWinningColorBet, getBetAmount());
-                monedero += winnings;
-
-                // Restar la cantidad apostada si la apuesta es perdida
-                if (winnings == 0) {
-                    monedero -= betAmount;
-                } else {
-                    monedero += winnings;
-                }
-
-                // Actualizar la interfaz de usuario
-                updateUI();
-                // Mostrar el resultado
-                showResultMessage(isWinningColorBet, winnings);
-
-
-                // Actualizar la interfaz de usuario
-                updateUI();
-                // Mostrar el resultado
-                showResultMessage(isWinningColorBet, winnings);
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-            }
-        });
-
-        panoRuleta.setAnimation(rotateAnimation);
-        panoRuleta.startAnimation(rotateAnimation);
     }
 
     private void updateNumeroGanadorTextView(int winningNumber) {
@@ -201,86 +155,61 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
         monederoLabel.setText("Monedero: " + monedero);
         turnosLabel.setText("Turnos: " + turnos);
 
-        // Restablece el estado de los botones después de 3 turnos
-        if (turnos % 3 == 0) {
-            resetButtons();
+        if (turnos >= 3 || monedero <= 0) {
+            // Mostrar mensaje de juego terminado
+            String gameOverMessage = "";
 
-        // Verificar si el monedero es menor que 0
-        if (monedero <= 0) {
-            // Mostrar mensaje y cerrar la aplicación
-            Toast.makeText(this, "No tienes saldo, fin del juego", Toast.LENGTH_SHORT).show();
-            finish(); // Cierra la actividad actual (la aplicación en este caso)
+            if (monedero <= 0) {
+                // No tienes saldo
+                gameOverMessage = "¡No tienes saldo! Fin del juego.";
+            } else {
+                // Has agotado los turnos
+                gameOverMessage = "¡Has agotado los 3 turnos permitidos! Fin del juego.";
+            }
+
+            Toast.makeText(this, gameOverMessage, Toast.LENGTH_LONG).show();
+
+
+            // Esperar unos segundos antes de cerrar la aplicación
+            new CountDownTimer(6000, 1000) {
+                @Override
+                public void onTick(long millisUntilFinished) {
+                }
+
+                @Override
+                public void onFinish() {
+                    // Volver a InicioActivity
+                    Intent intent = new Intent(MainActivity.this, InicioActivity.class);
+                    startActivity(intent);
+                    finish();
+                }
+            }.start();
         }
     }
 
-    }
     private void resetButtons() {
         // Lógica para restablecer el estado de los botones
         isRojoSelected = false;
         isNegroSelected = false;
+        is1stRangeSelected = false;
+        is2ndRangeSelected = false;
+        is3rdRangeSelected = false;
+
     }
 
     private int calculateColorBetWinnings(boolean isWinningColorBet, int betAmount) {
         // Lógica para calcular las ganancias en función de la apuesta de color y la cantidad apostada
-        // Duplica la cantidad apostada si la apuesta es ganadora, de lo contrario, la pierde.
         return isWinningColorBet ? (betAmount) : 0;
     }
 
-
-
-
     private int calculateWinningNumber() {
-        // Lógica para obtener el número ganador después del giro en una ruleta europea
-
-        // El orden de los números en una ruleta europea
-        int[] europeanRouletteNumbers = {0, 32, 15, 19, 4, 21, 2, 25, 17, 34,
-                6, 27, 13, 36, 11, 30, 8, 23, 10, 5,
-                24, 16, 33, 1, 20, 14, 31, 9, 22, 18,
-                29, 7, 28, 12, 35, 3, 26};
-
-        // El rango de grados por número en una ruleta europea
-        int degreesPerNumber = 360 / europeanRouletteNumbers.length;
-
-        // Ajustar el ángulo de inicio (90 grados en tu caso)
-        int adjustedStartAngle = 90;
-
-        // Calcular el número ganador en función del ángulo actual (lngDegrees)
-        int winningNumber = (int) ((lngDegrees + adjustedStartAngle) / degreesPerNumber);
-
-        // Asegurarse de que el número ganador esté en el rango correcto
-        winningNumber = (winningNumber + europeanRouletteNumbers.length) % europeanRouletteNumbers.length;
-
-        // Obtener el número ganador de la ruleta europea
-        winningNumber = europeanRouletteNumbers[winningNumber];
-
-        return winningNumber;
+        return random.nextInt(37); // Números en la ruleta europea van de 0 a 36
     }
-    private boolean isWinningColorBet(int winningNumber) {
-        // Lógica para determinar si la apuesta de color es ganadora
-        boolean isRed = isNumberRed(winningNumber);
 
-        // Verificar si la apuesta de color seleccionada por el jugador es rojo
-        if (isRojoSelected) {
-            return isRed;
-        }
-        // Verificar si la apuesta de color seleccionada por el jugador es negro
-        else if (isNegroSelected) {
-            return !isRed;
-        }
-        // Si no se ha seleccionado ningún color, la apuesta no puede ser ganadora
-        return false;
-    }
-    private boolean isNumberRed(int number) {
-        // Números rojos en la ruleta europea
-        int[] redNumbers = {1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36};
 
-        // Verificar si el número está en la lista de números rojos
-        for (int redNumber : redNumbers) {
-            if (number == redNumber) {
-                return true;
-            }
-        }
-        return false;
+
+    private void checkColorBetResult() {
+        performRotationAndCheckResult();
     }
 
     private void checkNumberRangeBetResult() {
@@ -302,7 +231,7 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
             public void onAnimationEnd(Animation animation) {
                 panoRuletaRotation = true;
                 // Obtener el resultado después del giro
-                int winningNumber = calculateWinningNumber();
+                winningNumber = calculateWinningNumber();
 
                 // Obtener la apuesta a un rango de números seleccionada por el jugador
                 String selectedBet = getSelectedBet();
@@ -310,14 +239,29 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
                 // Verificar el resultado de la apuesta a un rango de números
                 boolean isWinningRangeBet = isWinningRangeBet(winningNumber, selectedBet);
 
+                // Verificar el resultado de la apuesta de color
+                boolean isWinningColorBet = isWinningColorBet(winningNumber, selectedBet);
+
                 // Calcular las ganancias y actualizar el monedero
-                int winnings = calculateRangeBetWinnings(isWinningRangeBet, getBetAmount());
-                monedero += winnings;
+                int betAmount = getBetAmount();
+                isWinningRangeBet = isWinningRangeBet(winningNumber, getSelectedBet());
+                winnings = calculateRangeBetWinnings(isWinningRangeBet, betAmount);
+
+                // Mostrar el número ganador en pantalla
+                updateNumeroGanadorTextView(winningNumber);
+
+                if (winnings == 0) {
+                    // Restar la cantidad apostada si la apuesta es perdida
+                    monedero -= betAmount;
+                } else {
+                    monedero += winnings;
+                }
 
                 // Actualizar la interfaz de usuario
                 updateUI();
                 // Mostrar el resultado
-                showResultMessage(isWinningRangeBet, winnings);
+                showResultMessage(isWinningRangeBet || isWinningColorBet, winnings);
+
             }
 
             @Override
@@ -328,26 +272,95 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
         panoRuleta.setAnimation(rotateAnimation);
         panoRuleta.startAnimation(rotateAnimation);
     }
-    private String getSelectedBet() {
-        // Lógica para obtener la opción de apuesta seleccionada por el jugador (Rojo, Negro, 0-11, 12-24, 25-36)
-        // Aquí asumo que tienes algún mecanismo para determinar la opción seleccionada.
-        // Puedes adaptar esta lógica según la implementación específica de tu interfaz de usuario.
 
-        // Si prefieres utilizar botones de opción (por ejemplo, RadioButton), puedes obtener la selección de esa manera.
+    private boolean isWinningColorBet(int winningNumber, String selectedBet) {
+        // Lógica para determinar si la apuesta de color es ganadora
+        boolean isRed = isNumberRed(winningNumber);
 
-        // En este ejemplo, estoy asumiendo que tienes botones de apuesta en tu interfaz y cada botón tiene un identificador único.
-        // Debes ajustar esta lógica según cómo estén implementados tus botones.
-
-        if (isRojoSelected) {
-            return "Rojo";
-        } else if (isNegroSelected) {
-            return "Negro";
-        } else {
-            // Aquí puedes manejar otras opciones de apuesta, como 0-11, 12-24, 25-36, según la implementación de tu interfaz.
-            // En este ejemplo, devolveré una cadena vacía, pero debes adaptarlo a tu lógica real.
-            return "";
-        }
+        return (selectedBet.equals("Rojo") && isRed) || (selectedBet.equals("Negro") && !isRed);
     }
+
+    private boolean isNumberRed(int number) {
+        // Números rojos en la ruleta europea
+        int[] redNumbers = {1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36};
+
+        // Verificar si el número está en la lista de números rojos
+        for (int redNumber : redNumbers) {
+            if (number == redNumber) {
+                return true;
+            }
+        }
+        return false;
+    }
+    private int calculateBetWinnings(boolean isWinningBet, int betAmount) {
+        // Lógica para calcular las ganancias en función de la apuesta y la cantidad apostada
+        return isWinningBet ? (betAmount) : 0;
+    }
+    private void performRotationAndCheckResult() {
+        int ran = random.nextInt(360) + 3600;
+        RotateAnimation rotateAnimation = new RotateAnimation((float) lngDegrees, (float) (lngDegrees + ran), 1, 0.5f, 1, 0.5f);
+
+        lngDegrees = (lngDegrees + ran) % 360;
+        rotateAnimation.setDuration((long) ran);
+        rotateAnimation.setFillAfter(true);
+        rotateAnimation.setInterpolator(new DecelerateInterpolator());
+        rotateAnimation.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+                panoRuletaRotation = false;
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                panoRuletaRotation = true;
+                // Obtener el resultado después del giro
+                winningNumber = calculateWinningNumber();
+                updateNumeroGanadorTextView(winningNumber);
+
+                // Obtener la apuesta a un rango de números seleccionada por el jugador
+                String selectedBet = getSelectedBet();
+
+                // Verificar el resultado de la apuesta a un rango de números
+                boolean isWinningRangeBet = isWinningRangeBet(winningNumber, selectedBet);
+
+                // Calcular las ganancias y actualizar el monedero
+                winnings = calculateRangeBetWinnings(isWinningRangeBet, getBetAmount());
+                monedero += winnings;
+
+                // Actualizar la interfaz de usuario
+                // Mostrar el resultado
+                showResultMessage(isWinningRangeBet, winnings);
+                updateUI();
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+            }
+        });
+
+        panoRuleta.setAnimation(rotateAnimation);
+        panoRuleta.startAnimation(rotateAnimation);
+    }
+
+        private String getSelectedBet() {
+            // Puedes adaptar esta lógica según la implementación específica de tu interfaz de usuario.
+
+            if (isRojoSelected) {
+                return "Rojo";
+            } else if (isNegroSelected) {
+                return "Negro";
+            } else if (is1stRangeSelected) {
+                return "0-11";
+            } else if (is2ndRangeSelected) {
+                return "12-24";
+            } else if (is3rdRangeSelected) {
+                return "25-36";
+            } else {
+                return "";
+            }
+        }
+
     private boolean isWinningRangeBet(int winningNumber, String selectedBet) {
         // Lógica para comparar el número ganador con la apuesta a un rango de números seleccionada
         int selectedMin, selectedMax;
@@ -379,7 +392,7 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
     private int calculateRangeBetWinnings(boolean isWinningRangeBet, int betAmount) {
         // Lógica para calcular las ganancias en función de la apuesta a un rango de números y la cantidad apostada
         // Duplica la cantidad apostada si la apuesta es ganadora, de lo contrario, la pierde.
-        return isWinningRangeBet ? (betAmount * 2) : 0;
+        return isWinningRangeBet ? (betAmount) : 0;
     }
 
     private int getBetAmount() {
@@ -406,5 +419,12 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
     @Override
     public void onAnimationRepeat(Animation animation) {
         // Código para manejar la repetición de la animación
+    }
+
+    @Override
+    protected void onDestroy() {
+        // Close the database connection when the activity is being destroyed
+        walletDatabase.close();
+        super.onDestroy();
     }
 }
