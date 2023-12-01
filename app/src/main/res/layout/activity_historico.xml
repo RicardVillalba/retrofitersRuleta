@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
-
     <!-- LinearLayout para tus TextViews -->
     <LinearLayout
         android:id="@+id/linearLayout"
@@ -13,45 +13,16 @@
         android:layout_marginEnd="16dp"
         android:layout_marginTop="16dp">
 
-        <TextView
-            android:id="@+id/textId"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="ID: " />
-
-        <TextView
-            android:id="@+id/textNombre"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Nombre: " />
-
-        <TextView
-            android:id="@+id/textMonedero"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Monedero: " />
-
-        <TextView
-            android:id="@+id/textTurnos"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Turnos: " />
-
     </LinearLayout>
 
-    <!-- RecyclerView para mostrar datos de la base de datos -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/linearLayout"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginTop="16dp" />
+    <ListView
+        android:id="@+id/lista"
+        android:layout_width="409dp"
+        android:layout_height="695dp"
+        android:layout_marginTop="40dp"
+        android:layout_marginBottom="40dp"
+
+        />
 
     <!-- Botón para volver a la actividad inicial -->
     <Button

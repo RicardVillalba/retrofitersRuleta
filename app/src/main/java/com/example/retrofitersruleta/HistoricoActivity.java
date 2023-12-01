@@ -2,92 +2,94 @@ package com.example.retrofitersruleta;
 
 import android.content.Intent;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListView;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
-import java.util.List;
+
+import static com.example.retrofitersruleta.PartidaDatabase.COLUMN_MONEDERO;
+import static com.example.retrofitersruleta.PartidaDatabase.COLUMN_NOMBRE;
+import static com.example.retrofitersruleta.PartidaDatabase.COLUMN_TURNOS;
 
 public class HistoricoActivity extends AppCompatActivity {
 
-    private RecyclerView recyclerViewHistorico;
-    private HistoricoAdapter historicoAdapter;
+    private ListView listView;
+    private PartidaDatabase partidaDatabase;
+    private ReproductorMusica reproductorMusica;
+
+    private Button btnVolver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_historico);
 
-        recyclerViewHistorico = findViewById(R.id.recyclerView);
-        recyclerViewHistorico.setLayoutManager(new LinearLayoutManager(this));
+        // Inicializar la base de datos de partidas
+        partidaDatabase = new PartidaDatabase(this);
 
-        List<HistoricoItem> historicoItemList = obtenerDatosDeLaBaseDeDatos();
-        historicoAdapter = new HistoricoAdapter(historicoItemList);
-        recyclerViewHistorico.setAdapter(historicoAdapter);
+        // Inicializar el reproductor de música
+        reproductorMusica = ReproductorMusica.getInstance(this);
 
-        Button btnVolver = findViewById(R.id.btnVolver);
+        // Inicializar ListView
+        listView = findViewById(R.id.lista);
 
-        // Agregar un OnClickListener al botón
+        // Inicializar el botón "Volver a Inicio"
+        btnVolver = findViewById(R.id.btnVolver);
+
+
         btnVolver.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Acción a realizar al hacer clic en el botón (volver a la actividad inicial)
+                // Al hacer clic en el botón, iniciar la actividad InicioActivity
                 Intent intent = new Intent(HistoricoActivity.this, InicioActivity.class);
                 startActivity(intent);
-                finish(); // Opcional: finalizar esta actividad para que no quede en la pila de actividades
-
+                finish(); // Cerrar la actividad actual para que el usuario no pueda regresar
             }
         });
+
+        // Obtener y mostrar registros en el ListView
+        mostrarRegistrosEnListView();
+
+        reproductorMusica.reproducirMelodiaFondo();
+
     }
-    private List<HistoricoItem> obtenerDatosDeLaBaseDeDatos() {
-        // Realizar una consulta para obtener el historial de resultados
-        WalletDbHelper dbHelper = new WalletDbHelper(this);
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
 
-        Cursor cursor = db.query(
-                "historico",
-                null,
-                null,
-                null,
-                null,
-                null,
-                null
-        );
+    private void mostrarRegistrosEnListView() {
+        // Obtener registros de la base de datos
+        Cursor cursor = partidaDatabase.getTop10PartidaRecords();
+        ArrayList<String> registros = new ArrayList<>();
 
-        List<HistoricoItem> historicoItemList = new ArrayList<>();
+        // Recorrer el cursor y agregar registros a la lista
+        if (cursor.moveToFirst()) {
+            do {
+                String nombre = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NOMBRE));
+                int turnos = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_TURNOS));
+                int monedero = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_MONEDERO));
 
-        while (cursor.moveToNext()) {
-            // Verificar si la columna existe antes de obtener su índice
-            int idIndex = cursor.getColumnIndex("id");
-            int nombreJugadorIndex = cursor.getColumnIndex("nombre");
-            int monederoIndex = cursor.getColumnIndex("monedero");
-            int turnosIndex = cursor.getColumnIndex("turnos");
-
-            if (idIndex != -1 && nombreJugadorIndex != -1 && monederoIndex != -1 && turnosIndex != -1) {
-                // Las columnas existen, ahora puedes acceder a sus valores
-                int id = cursor.getInt(idIndex);
-                String nombre = cursor.getString(nombreJugadorIndex);
-                int monedero = cursor.getInt(monederoIndex);
-                int turnos = cursor.getInt(turnosIndex);
-
-                HistoricoItem historicoItem = new HistoricoItem(id, nombre, monedero, turnos);
-                historicoItemList.add(historicoItem);
-            } else {
-                // Al menos una de las columnas no existe, manejar la situación según sea necesario
-                Log.e("Error", "Al menos una de las columnas no existe en el resultado de la consulta.");
-            }
+                // Convertir los valores int a String
+                String registro = "Nombre: " + nombre + ", Turnos: " + turnos + ", Monedero: " + monedero;
+                registros.add(registro);
+            } while (cursor.moveToNext());
         }
 
-        cursor.close();
-        db.close();
+        // Crear un adaptador personalizado para mostrar los datos en el ListView
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, registros);
 
-        return historicoItemList;
+        // Establecer el adaptador en el ListView
+        listView.setAdapter(adapter);
+    }
+
+    @Override
+    protected void onDestroy() {
+        reproductorMusica.detenerMelodiaFondo();
+        ReproductorMusica.getInstance(this).liberarRecursos();
+        // Cerrar la base de datos al destruir la actividad
+        partidaDatabase.close();
+        super.onDestroy();
     }
 }
