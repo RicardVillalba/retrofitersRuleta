@@ -40,7 +40,7 @@
             android:layout_alignParentRight="true"
             android:layout_marginTop="653dp"
             android:layout_marginRight="261dp"
-            android:text="Monedero: 100"
+            android:text="@string/wallet"
             android:textColor="@android:color/holo_green_dark"
             android:textSize="18sp" />
 
@@ -52,7 +52,7 @@
             android:layout_alignParentRight="true"
             android:layout_marginTop="29dp"
             android:layout_marginRight="306dp"
-            android:text="Turnos: 0"
+            android:text="@string/turn"
             android:textSize="18sp" />
 
         <TextView
@@ -63,9 +63,8 @@
             android:layout_alignParentRight="true"
             android:layout_marginTop="-24dp"
             android:layout_marginRight="47dp"
-            android:text="Número: 0"
+            android:text="@string/number"
             android:textSize="18sp" />
-
 
 
         <EditText
@@ -76,7 +75,7 @@
             android:layout_alignParentRight="true"
             android:layout_marginTop="105dp"
             android:layout_marginRight="103dp"
-            android:hint="Ingrese la cantidad a apostar"
+            android:hint="@string/entertheamounttobet"
             android:inputType="numberDecimal" />
 
         <LinearLayout
@@ -89,17 +88,17 @@
                 android:id="@+id/btnRojo"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="Rojo"
+                android:layout_marginRight="5dp"
                 android:layout_weight="1"
-                android:layout_marginRight="5dp"/>
+                android:text="@string/red" />
 
             <Button
                 android:id="@+id/btnNegro"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="Negro"
+                android:layout_marginLeft="5dp"
                 android:layout_weight="1"
-                android:layout_marginLeft="5dp"/>
+                android:text="@string/black" />
 
         </LinearLayout>
 

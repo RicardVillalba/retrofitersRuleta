@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">retrofitersRuleta</string>
+    <string name="red">Red</string>
+    <string name="black">Black</string>
+    <string name="entertheamounttobet">Enter the amount to bet</string>
+    <string name="wallet">Wallet</string>
+    <string name="number">Number</string>
+    <string name="turn">Turns</string>
+    <string name="insertYourName">Inser your name</string>
+    <string name="startGame">Start game</string>
+    <string name="showhistory">Show History</string>
 </resources>

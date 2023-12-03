@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">retrofitersRuleta</string>
+    <string name="red">Rojo</string>
+    <string name="black">Negro</string>
+    <string name="entertheamounttobet">Ingrese la cantidad a apostar</string>
+    <string name="wallet">Monedero</string>
+    <string name="number">Número</string>
+    <string name="turn">Turnos</string>
+    <string name="insertYourName">Ingresa tu nombre</string>
+    <string name="startGame">Empezar juego</string>
+    <string name="showhistory">Mostral historial</string>
+</resources>

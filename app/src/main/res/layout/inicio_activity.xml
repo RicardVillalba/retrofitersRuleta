@@ -8,8 +8,8 @@
         android:id="@+id/editTextNombre"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Ingresa tu nombre"
         android:layout_marginTop="150dp"
+        android:hint="@string/insertYourName"
         android:inputType="text" />
 
     <Button
@@ -18,16 +18,16 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/editTextNombre"
         android:layout_marginTop="30dp"
-        android:text="Iniciar Juego" />
+        android:text="@string/startGame" />
 
     <Button
         android:id="@+id/buttonVerHistorico"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@id/buttonIniciarJuego"
         android:layout_gravity="center"
         android:layout_marginTop="30dp"
-        android:layout_below="@id/buttonIniciarJuego"
-        android:text="Ver Histórico" />
+        android:text="@string/showhistory" />
 
     <Switch
         android:id="@+id/switchAudio"
