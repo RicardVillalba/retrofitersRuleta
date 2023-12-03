@@ -16,7 +16,8 @@ public class PartidaDatabase extends SQLiteOpenHelper {
     public static final String COLUMN_NOMBRE = "nombre";
     public static final String COLUMN_TURNOS = "turnos";
     public static final String COLUMN_MONEDERO = "monedero";
-
+    private static final String COLUMN_LATITUDE = "latitude";
+    private static final String COLUMN_LONGITUDE = "longitude";
     public PartidaDatabase(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
@@ -28,7 +29,14 @@ public class PartidaDatabase extends SQLiteOpenHelper {
                 COLUMN_NOMBRE + " TEXT, " +
                 COLUMN_TURNOS + " INTEGER, " +
                 COLUMN_MONEDERO + " INTEGER);";
+
+        String createUbicacionesTableQuery = "CREATE TABLE ubicaciones (" +
+                COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                COLUMN_LATITUDE + " REAL," +
+                COLUMN_LONGITUDE + " REAL" +
+                ")";
         db.execSQL(createTableQuery);
+        db.execSQL(createUbicacionesTableQuery);
     }
 
     @Override
@@ -54,6 +62,10 @@ public class PartidaDatabase extends SQLiteOpenHelper {
         String limit = "10";
         return db.query(TABLE_PARTIDAS, columns, null, null, null, null, orderBy, limit);
     }
-
+    public void insertarUbicacion(ContentValues values) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.insert("ubicaciones", null, values);
+        db.close();
+    }
 }
 

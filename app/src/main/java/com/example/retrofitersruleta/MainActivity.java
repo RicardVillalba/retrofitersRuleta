@@ -5,10 +5,14 @@ import static com.example.retrofitersruleta.PartidaDatabase.COLUMN_NOMBRE;
 import static com.example.retrofitersruleta.PartidaDatabase.COLUMN_TURNOS;
 
 
+import android.app.NotificationManager;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.media.MediaScannerConnection;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.Environment;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
@@ -18,15 +22,41 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.Toast;
 import android.widget.TextView;
+import android.content.ContentResolver;
+import android.content.ContentValues;
+import android.content.Context;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.net.Uri;
+import android.provider.CalendarContract;
+import android.widget.Toast;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.content.Context;
+import android.graphics.Color;
+import android.os.Build;
 
+import androidx.core.app.NotificationCompat;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Calendar;
+import java.util.TimeZone;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.ArrayList;
 import java.util.Random;
 
-public class MainActivity extends AppCompatActivity implements Animation.AnimationListener {
+import android.location.LocationManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.Manifest;
+import androidx.core.app.ActivityCompat;
+
+
+public class MainActivity extends AppCompatActivity implements Animation.AnimationListener, LocationListener {
 
     private String nombre;
     private int monedero = 100;
@@ -59,6 +89,7 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
     private ReproductorMusica reproductorMusica;
 
     private final Random random = new Random();
+    private LocationManager locationManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,8 +97,12 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
         setContentView(R.layout.activity_main);
 
         reproductorMusica = ReproductorMusica.getInstance(this);
-        // Iniciar la reproducción de la melodía de fondo
-
+        // Obtenemos el servicio de ubicación del sistema
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        // Solicitamos actualizaciones de ubicación
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+        }
         partidaDatabase = new PartidaDatabase(this);
 
         Intent intent = getIntent();
@@ -92,6 +127,14 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
 
     }
 
+    // Método llamado cada vez que la ubicación cambia
+    @Override
+    public void onLocationChanged(Location location) {
+        double latitude = location.getLatitude();
+        double longitude = location.getLongitude();
+        // Aquí  guardamos la ubicación en la base de datos SQLite
+        guardarUbicacionEnSQLite(latitude, longitude);
+    }
     @Override
     protected void onResume() {
         super.onResume();
@@ -173,6 +216,9 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
 
             if (isWinningBet) {
                 resultMessage = "¡Felicidades! Has ganado " + winnings + " monedas.";
+                captureAndSaveScreenshot();
+                NotificationHelper.showVictoryNotification( "Mensaje de victoria", this);
+                guardarVictoriaEnCalendario();
             } else {
                 resultMessage = "Lo siento, has perdido la apuesta.";
             }
@@ -473,4 +519,90 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
             super.onDestroy();
         }
 
+    private void captureAndSaveScreenshot() {
+        View rootView = getWindow().getDecorView().getRootView();
+        rootView.setDrawingCacheEnabled(true);
+        Bitmap screenshotBitmap = Bitmap.createBitmap(rootView.getDrawingCache());
+        rootView.setDrawingCacheEnabled(false);
+
+        // Guardar la captura en el almacenamiento externo
+        String filename = "screenshot_" + System.currentTimeMillis() + ".png";
+        File directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+        File screenshotFile = new File(directory, filename);
+
+        try {
+            FileOutputStream outputStream = new FileOutputStream(screenshotFile);
+            screenshotBitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
+            outputStream.close();
+
+            MediaScannerConnection.scanFile(this, new String[]{screenshotFile.toString()}, null, null);
+
+            Toast.makeText(this, "Captura de pantalla guardada", Toast.LENGTH_SHORT).show();
+        } catch (IOException e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Error al guardar la captura de pantalla", Toast.LENGTH_SHORT).show();
+        }
+    }
+    public static class NotificationHelper {
+
+        private static final String CHANNEL_ID = "victory_channel";
+        private static final int NOTIFICATION_ID = 1;
+
+        public static void showVictoryNotification(String victoryMessage, MainActivity activity) {
+            createNotificationChannel( activity);
+
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(activity, CHANNEL_ID)
+                    .setSmallIcon(R.drawable.ic_notification)
+                    .setContentTitle("¡Victoria!")
+                    .setContentText(victoryMessage)
+                    .setPriority(NotificationCompat.PRIORITY_HIGH)
+                    .setVibrate(new long[]{0, 1000}) // Vibración corta
+                    .setAutoCancel(true); // La notificación se cierra al hacer clic
+
+            NotificationManager notificationManager = (NotificationManager) activity.getSystemService(Context.NOTIFICATION_SERVICE);
+            notificationManager.notify(NOTIFICATION_ID, builder.build());
+        }
+
+        private static void createNotificationChannel( MainActivity activity) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                CharSequence name = "Victory Channel";
+                String description = "Canal para notificaciones de victoria";
+                int importance = NotificationManager.IMPORTANCE_HIGH;
+                NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+                channel.setDescription(description);
+                channel.enableLights(true);
+                channel.setLightColor(Color.RED);
+                channel.enableVibration(true);
+
+                NotificationManager notificationManager = activity.getSystemService(NotificationManager.class);
+                notificationManager.createNotificationChannel(channel);
+            }
+        }
+    }
+
+    private void guardarVictoriaEnCalendario() {
+        // Obtenemos el ContentResolver
+        ContentResolver contentResolver = getContentResolver();
+
+        // Creamos un nuevo evento en el calendario
+        ContentValues values = new ContentValues();
+        values.put(CalendarContract.Events.TITLE, "Victoria en Ruleta"); // Título del evento
+        values.put(CalendarContract.Events.DESCRIPTION, "Ganaste en la ruleta"); // Descripción del evento
+        values.put(CalendarContract.Events.CALENDAR_ID, 1); // ID del calendario (1 es el calendario predeterminado)
+        values.put(CalendarContract.Events.DTSTART, System.currentTimeMillis()); // Hora de inicio (actual)
+        values.put(CalendarContract.Events.DTEND, System.currentTimeMillis() + 1000 * 60 * 60); // Hora de finalización (1 hora después)
+
+        // Insertamos el evento en el calendario
+        contentResolver.insert(CalendarContract.Events.CONTENT_URI, values);
+    }
+
+    private void guardarUbicacionEnSQLite(double latitude, double longitude) {
+        // Creamos un objeto ContentValues para insertar la ubicación en la base de datos
+        ContentValues values = new ContentValues();
+        values.put("latitude", latitude);
+        values.put("longitude", longitude);
+
+        // Insertamos la ubicación en la base de datos
+        partidaDatabase.insertarUbicacion(values);
+    }
 }
