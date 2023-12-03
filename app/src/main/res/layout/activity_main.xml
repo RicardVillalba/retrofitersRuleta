@@ -38,8 +38,8 @@
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
             android:layout_alignParentRight="true"
-            android:layout_marginTop="653dp"
-            android:layout_marginRight="261dp"
+            android:layout_marginTop="652dp"
+            android:layout_marginRight="300dp"
             android:text="@string/wallet"
             android:textColor="@android:color/holo_green_dark"
             android:textSize="18sp" />
