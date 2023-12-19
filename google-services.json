@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "50924376382",
+    "project_id": "ruleta-b76ef",
+    "storage_bucket": "ruleta-b76ef.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:50924376382:android:3dc65c3456954ae5cf5c6f",
+        "android_client_info": {
+          "package_name": "com.example.retrofitersruleta"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA-_hZGassCgzdNNWwnAIJrOkJl9xZZFSw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
