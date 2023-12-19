@@ -55,6 +55,17 @@ import android.location.LocationListener;
 import android.Manifest;
 import androidx.core.app.ActivityCompat;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
+import java.util.HashMap;
+import java.util.Map;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+
 
 public class MainActivity extends AppCompatActivity implements Animation.AnimationListener, LocationListener {
 
@@ -91,10 +102,18 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
     private final Random random = new Random();
     private LocationManager locationManager;
 
+    private FirebaseFirestore firestoreDB;
+    private FirebaseAuth firebaseAuth;
+    private FirebaseApiService apiService;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        firestoreDB = FirebaseFirestore.getInstance();
+        firebaseAuth = FirebaseAuth.getInstance();
 
         reproductorMusica = ReproductorMusica.getInstance(this);
         // Obtenemos el servicio de ubicación del sistema
@@ -125,6 +144,32 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
         configureBetButtons();
         reproductorMusica.reproducirMelodiaFondo();
 
+        // Configurar Retrofit
+        Retrofit retrofit = RetrofitClient.getRetrofitInstance();
+        apiService = retrofit.create(FirebaseApiService.class);
+
+        // Ejemplo de llamada a la API
+        obtenerJugadorPorNombre("nombre_jugador_ejemplo");
+    }
+
+    private void obtenerJugadorPorNombre(String nombreJugador) {
+        Call<PartidaRecord> call = apiService.getJugadorPorNombre(nombreJugador);
+        call.enqueue(new Callback<PartidaRecord>() {
+            @Override
+            public void onResponse(Call<PartidaRecord> call, Response<PartidaRecord> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    PartidaRecord jugador = response.body();
+                    // Haz algo con los datos del jugador
+                } else {
+                    // Manejar la respuesta no exitosa
+                }
+            }
+
+            @Override
+            public void onFailure(Call<PartidaRecord> call, Throwable t) {
+                // Manejar el error
+            }
+        });
     }
 
     // Método llamado cada vez que la ubicación cambia
@@ -246,6 +291,8 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
             mostrarRegistrosEnListView();
 
             Toast.makeText(this, gameOverMessage, Toast.LENGTH_LONG).show();
+
+            updateFirestoreUserData();
 
 
             new CountDownTimer(6000, 1000) {
@@ -604,5 +651,29 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
 
         // Insertamos la ubicación en la base de datos
         partidaDatabase.insertarUbicacion(values);
+    }
+
+    private void updateFirestoreUserData() {
+        FirebaseUser user = firebaseAuth.getCurrentUser();
+        if (user != null) {
+            String userId = user.getUid();
+
+            Map<String, Object> userData = new HashMap<>();
+            userData.put("nombre", nombre);
+            userData.put("monedero", monedero);
+            userData.put("turnos", turnos);
+
+            // Ajusta la referencia a tu colección "jugadores"
+            firestoreDB.collection("jugadores").document(userId)
+                    .set(userData)
+                    .addOnSuccessListener(aVoid -> {
+                        // La información del jugador se actualizó correctamente en Firestore
+                        // Puedes agregar aquí cualquier lógica adicional que necesites.
+                    })
+                    .addOnFailureListener(e -> {
+                        // Maneja el error en caso de que la actualización falle
+                        Toast.makeText(MainActivity.this, "Error al actualizar datos en Firestore", Toast.LENGTH_SHORT).show();
+                    });
+        }
     }
 }

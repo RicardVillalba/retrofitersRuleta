@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "344446970501",
+    "firebase_url": "https://ruletaretrofiters-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "ruletaretrofiters",
+    "storage_bucket": "ruletaretrofiters.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:344446970501:android:ec2cc6db095b036d6f17ec",
+        "android_client_info": {
+          "package_name": "com.example.retrofitersruleta"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "344446970501-m3q4g90p3q67dsasfbcg6qjk59ubd0qh.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.retrofitersruleta",
+            "certificate_hash": "f1a74c4712fe593baeba78cd34369f068b7b9d32"
+          }
+        },
+        {
+          "client_id": "344446970501-hqitkojrahvt93avt1gvocsvo935otn0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAqR2XkhPCOKk3abb8AQq1mrQLBPXGnmbQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "344446970501-hqitkojrahvt93avt1gvocsvo935otn0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

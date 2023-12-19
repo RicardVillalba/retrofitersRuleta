@@ -9,4 +9,6 @@
     <string name="insertYourName">Inser your name</string>
     <string name="startGame">Start game</string>
     <string name="showhistory">Show History</string>
+    <string name="google_api_key">AIzaSyAqR2XkhPCOKk3abb8AQq1mrQLBPXGnmbQ</string>
+
 </resources>
