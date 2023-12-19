@@ -4,7 +4,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RetrofitClient {
 
-    private static final String BASE_URL = "https://tu-app-firebase.firebaseio.com/"; // Reemplaza con tu URL de Firebase
+    private static final String BASE_URL = "https://ruletaretrofiters-default-rtdb.europe-west1.firebasedatabase.app/";
 
     private static Retrofit retrofit;
 
